@@ -1,8 +1,10 @@
 ---
-title: "My First-Principle Note: MMA Layout"
+
+title: "First-Principle Note: MMA Layout"
 date: 2026-06-26 13:30:00 -0700
 categories: [GPU]
-tags: [gpu, mma, matrix, cuda]
+tags: [gpu]
+
 ---
 
 ## Disclaimer
