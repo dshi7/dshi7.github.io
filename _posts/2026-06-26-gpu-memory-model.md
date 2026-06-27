@@ -56,6 +56,7 @@ Threads are mapped to banks in a *sequential, interleaved* pattern:
 This is because (1) B is sliced across distinct threads and (2) 2-to-1 MUX.
 
 **Axiom 6.** **(Hopper) 4 sub-cores. each handles 64 FMAs (16-bit) per cycle.**
+![MMA 16x8x16 Layout](/assets/img/posts/mma-layout/mma_16_8_16.png)
 
 **Axiom 7. (Blackwell)** **256KB** **TMEM (128 lanes, 512 columns, 4-byte cells) sitting on top of tensor cores to bypass thread registers entirely**
 
@@ -81,7 +82,7 @@ The concept of 'which thread owns this element' is wiped.
 
 ## SMEM
 
-**Axiom 7. SMEM is sliced vertically into 32 banks (parallel hardware channels). Each bank only reads/writes 4B per clock cycle**
+**Axiom 8. SMEM is sliced vertically into 32 banks (parallel hardware channels). Each bank only reads/writes 4B per clock cycle**
 
 The number of 32 matches the thread number in a warp with an ideal conflict-free acesses.
 
