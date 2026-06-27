@@ -19,6 +19,8 @@ This blog explains my understanding about hardware layout (ground truth) and pop
 
 **HW enforcement: ISA mandates fragment layout of instruction like ldmatrix and mma**
 
+![ldmatrix fragment layout](/assets/img/posts/mma-layout/ldmatrix-fragment-layout.png)
+
 Landscape of layout:
 
 - memory access pattern (coalesced/sequential for GMEM and swizzled for SMEM)
