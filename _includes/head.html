@@ -1,0 +1,7 @@
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then(function(registrations) {
+      for (var r of registrations) { r.unregister(); }
+    });
+  }
+</script>
