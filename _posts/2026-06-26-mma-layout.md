@@ -65,28 +65,27 @@ In the previous example of col-read, 16 elements in col 0 sit in 16 different ba
 
 ## Layout representation
 
-Before losing focus in terminologies, I'd like to build a correct mental model first.
+Before losing focus in terminologies, I'd like to first build a correct mental model.
 
-Using `ldmatrix` as an example where kernel loads a matrix from SMEM to registers staged for MMA instruction.
+Using `ldmatrix` as an example where kernel loads a matrix from SMEM to registers staged for MMA instruction. Here's the high level picture to clarify:
 
-Programmer's ask is to copy a tensor from SMEM to thread registers and Triton compiler figures out how to do that. Conceptually, it is exactly a list of `mov %smem_addr %rf_addr` (`mov` is for illustration purpose ONLY) commands for every scalar element in the 2D array.
+- Programmer's ask is to copy a tensor from SMEM to thread registers
+- Triton compiler's job is to figure out how to do that. Conceptually, it is exactly a list of `mov %smem_addr %rf_addr` (`mov` is for illustrative purpose ONLY) commands for every scalar element in the 2D array.
 
-Note that tensor is NOT a single continuous blob. Both data sitting in SMEM (swizzled) an required by MMA fragment look puzzled and scrambled physically, so compiler can't just do a simple bulk memory copy. It must handle and build the mapping (from SMEM physical location to RF physical location) carefully.
+Note that tensor is NOT a single continuous blob. Both data sitting in SMEM banks (swizzled) and data required by MMA fragment are puzzled and scrambled physically, so compiler can't just do a simple bulk memory copy. Given the mappings from logical loc -> physical loc, compiler needs to sort out the mapping from their SMEM physical locations to RF physical locations.
 
 ### Triton's solution
 
-Triton uses the logical coordinate space as the bridge to convert layouts and introduces:
+Triton uses the logical coordinate space to bridge to convert layouts between SMEM and MMA, meaning:
+- step 1. finding logical locations by SMEM physical locations
+- step 2. finding thread registers (warpId, threadId, registerId) by logical locations 
 
-- base layout of SMEM: SMEM physical location => logical location
-- base layout of RF: (warpId, threadId, registerId) => logical location (rowId, colId)
+Step 2 is straightforward but how to do step 1? Triton developers found out that both SMEM swizzling layout and HW fragment layout can be represented as a F2 matrix in ([some algebra](https://arxiv.org/html/2505.23819v5)). Therefore, logical->physical mapping is done by applying the inverse of matrix. To be clear, Triton compiler denotes:
+- "M\_base\_smem": the inverse of F2 matrix representing SMEM swizzling layout
+- "M\_base\_mma": the inverse of F2 matrix representing MMA fragment layout
 
-However swizzling layout (bankId = colId ^ rowId) and HW MMA fragment layout are provided as our input.
-
-Triton developers found out a unified way ([linear layout](https://arxiv.org/html/2505.23819v5)) to represent the above source layouts in F2 linear algebra.
-
-Inverse of swizzling is defined as "M_base_smem" and inverse of HW fragment is defined as "M_base_mma" such that:
-- SMEM->RF (load): inv(M_base_mma) @ M_base_smem
-- RF->SMEM (store): inv(M_base_smem)@M_base_mma
-
+The original problem of uhauling tensor between SMEM and thread registers is formulated as:
+- SMEM->RF (load): inv(M\_base\_mma) @ M\_base\_smem
+- RF->SMEM (store): inv(M\_base\_smem) @ M\_base\_mma
 
 NOTE: This F2 algebra relies entirely on bit-vector representations, meaning this framework is strictly Power-of-Two (POT) only.
