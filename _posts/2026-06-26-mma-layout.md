@@ -17,40 +17,23 @@ This blog explains my understanding about hardware layout (ground truth) and pop
 
 ### Build picture from the ground up
 
-**HW enforcement: ISA mandates fragment layout of instruction like ldmatrix and mma**
+I would first figure out the first-principled story about layout, what is hardware/ISA mandated (immutable) and what is compiler's optimization art (mutable).
+
+Case 1. `ldmatrix` to load matrix from SMEM for mma instruction
+
+Notice that **ISA mandates fragment layout for ldmatrix.** When `ldmatrix` or `ldmatrix.trans` invokes, it's mandated that exactly which threads get which elements. 
+
+Also notice the **hardware fact that SMEM is splitted into 32 banks** to improve access concurrency. If same column sits in same bank, its col-read will cause bank conflict though not hurting correctness. **Swizzling layout is proposed to make it fast instead of make it work.** The math features of swizzling layout will be discussed later.
 
 ![ldmatrix fragment layout](/assets/img/posts/mma-layout/ldmatrix-fragment-layout.png)
 
-Landscape of layout:
+Case 2. `tcgen05{.ld,.st}` to load matrix from SMEM to TMEM
 
-- memory access pattern (coalesced/sequential for GMEM and swizzled for SMEM)
-- compute acess pattern (hardware mandated 'zig-zag' matrix fragments)
+Similarly ISA mandates thread fragment layout in TMEM. 
 
-Another dimension:
-
-- data layout (where data sits): matrix coordinate (row, col) => physical location
-- thread layout (which thread does what): thread ID => matrix coordinate (row, col)
-
-Access pattern is the math composition to bridge between thread layout and data layout.
-
-**Clarify a few ambiguity.** 
-
-- **Physical SMEM location: e.g. bank #0, offset 128**
-- **Physical register location: e.g. thread 0, register R2**
-- **Logical location: e.g. matrix[0][0]**
-
-Hardware mandates (tensor core) which physical registers
-
-Tensor core fragment layout (hardware enforcement) mandates the mapping from logical location to physical register location but **compiler needs to engineer *SMEM data layout*, which maps  logical location to physical SMEM location**
-
-Mapping from physical SMEM location to physical register location is determined by ISA but selected by compiler
+![tcgen05 fragment layout](/assets/img/posts/mma-layout/tcgen05-fragment-layout.png)
 
 ## Swizzling layout (SMEM)
-
-Hardware background:
-
-- SMEM is sliced vertically into 32 banks (parallel hardware channels). 
-- Each bank only reads/writes 4B per clock cycle.
 
 Example: 16x32 32-bit
 
@@ -79,5 +62,5 @@ baseline:	000		001		010		011		100		101		110		111
 
 By inspection, it's easily seen that:
 
-- For each row, thread ID allocation is a permutation (no more; no less)
-- For each col, each thread 
+1. For each row, thread ID allocation is a permutation (no more; no less). By XOR a number, some certain bits are flipped. Due to POT width, all combinations of 0101 are available so flipping bits can be seen as swapping of pairs.
+2. For each col, elements are stored in different banks so that they can be accessed without bank conflict. An intuitative view though not rigorous math proof is that, any two elements in same col are its original value (same) XOR their row ID (different) so must be different.
