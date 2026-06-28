@@ -17,7 +17,7 @@ This blog explains my understanding about hardware layout (ground truth) and pop
 
 ### Build picture from the ground up
 
-I would first figure out the first-principled story about layout, what is hardware/ISA mandated (immutable) and what is compiler's optimization art (mutable).
+I need to figure out the first-principled story about layout, what is hardware/ISA mandated (immutable) and what is compiler's optimization art (mutable).
 
 Case 1. `ldmatrix` to load matrix from SMEM for mma instruction
 
@@ -27,13 +27,13 @@ Also notice the **hardware fact that SMEM is splitted into 32 banks** to improve
 
 ![ldmatrix fragment layout](/assets/img/posts/mma-layout/ldmatrix-fragment-layout.png)
 
-Case 2. `tcgen05{.ld,.st}` to load matrix from SMEM to TMEM
+Case 2. `tcgen05` to load matrix from SMEM to TMEM
 
 Similarly ISA mandates thread fragment layout in TMEM. 
 
 ![tcgen05 fragment layout](/assets/img/posts/mma-layout/tcgen05-fragment-layout.png)
 
-## Swizzling layout (SMEM)
+## SMEM layout
 
 Example: 16x32 32-bit
 
@@ -44,21 +44,21 @@ Example: 16x32 32-bit
 To clarify, we should read it in this way. 
 For example, B10 at row=2/col=10 means the 32-bit element at Matrix[2][10] sits at bank 10 in SMEM.
 
-- Row-read: ideal conflict-free.
-- Col-read: one wrap reads 32 elements in first two columns and cause massive bank conflict because each columns entirely sites in one bank.
+- Row-read: idealyy conflict-free.
+- Col-read: one warp reads 32 elements in first two columns and cause massive bank conflict because each columns entirely sites in one bank.
 
-### Swizzled (thread ID = column ID ^ row ID)
+### Swizzled (bank ID = column ID ^ row ID)
+
+```javascript
+baseline:	000		001		010		011		100		101		110		111
+^0b001		001		000		011		010		101		100		111		110		# swap every two cells
+^0b010		010		011		000		001		110		111		100		101
+^0b011		011		010		001		000		111		110		101		100
+```
 
 ![swizzled](/assets/img/posts/gpu-memory-model/swizzled.png)
 
 In the previous example of col-read, 16 elements in col 0 sit in 16 different banks (0\~15) so can be accessed simulationeouly.
-
-```javascript
-baseline:	000		001		010		011		100		101		110		111
-^0b001		001		000		011		010		101		100		111		100		# swap every two cells
-^0b010		010		011		000		001		110		111		100		101
-^0b011		011		010		001		000		111		110		101		100
-```
 
 By inspection, it's easily seen that:
 
