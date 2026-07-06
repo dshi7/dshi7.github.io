@@ -1,6 +1,6 @@
 ---
 
-title: "First-Principle Note: GPU Memory Model"
+title: "First-Principle Note: Memory"
 date: 2026-06-26 15:18:00 -0700
 categories: [GPU]
 tags: [gpu, memory, cuda]
@@ -89,3 +89,7 @@ The number of 32 matches the thread number in a warp with an ideal conflict-free
 ![SMEM banks](/assets/img/posts/gpu-memory-model/SMEM banks.png)
 
 Bank conflict happens when multiple lanes access different addresses to the same bank.
+
+## TODO
+
+- Expand the SMEM bank-conflict section with worked examples for vectorized loads/stores.
