@@ -90,6 +90,4 @@ The original problem of uhauling tensor between SMEM and thread registers is for
 
 NOTE: This F2 algebra relies entirely on bit-vector representations, meaning this framework is strictly Power-of-Two (POT) only.
 
-## TODO
-
-- Add a concrete end-to-end example that traces one tile from SMEM physical layout to MMA registers.
+## TODO CuteDSL Layout

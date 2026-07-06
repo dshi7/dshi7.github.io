@@ -91,5 +91,3 @@ The number of 32 matches the thread number in a warp with an ideal conflict-free
 Bank conflict happens when multiple lanes access different addresses to the same bank.
 
 ## TODO
-
-- Expand the SMEM bank-conflict section with worked examples for vectorized loads/stores.

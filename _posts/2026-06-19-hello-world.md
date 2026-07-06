@@ -5,15 +5,9 @@ categories: [General]
 tags: [hello, first post]
 ---
 
-# README 👋
+# README
 
-Welcome to my blog! This is my first post — a classic "Hello, World!" to kick things off.
-
-## Who am I?
-
-I'm Daohang. This is my personal blog where I'll be sharing thoughts, projects, and whatever else catches my interest.
-
-This blog is where I share and refine my mental models, including first-principles notes on GPU kernels. All content is based on public information. All analysis personal. All errors are my own.
+This blog is where I share and refine my mental models, including first-principles notes on GPU kernels. All content is based on public information. 
 
 ## First-principles notes
 
@@ -22,10 +16,6 @@ This blog is where I share and refine my mental models, including first-principl
 - [First-Principle Note: Barriers](/posts/barriers/)
 - [First-Principle Note: GEMM](/posts/gemm/)
 
-## What's coming?
-
-Stay tuned for posts on topics I care about. More to come soon!
-
 ---
 
-*Thanks for stopping by.*
+*All analysis are personal. All errors are my own.*
