@@ -14,6 +14,7 @@ This blog is where I share and refine my mental models, including first-principl
 - [First-Principle Note: Layout](/posts/mma-layout/)
 - [First-Principle Note: Barriers](/posts/barriers/)
 - [First-Principle Note: GEMM](/posts/gemm/)
+- [First-Principle Note: FA](/posts/fa/)
 
 ## About Me
 
